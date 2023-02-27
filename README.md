@@ -7,7 +7,7 @@
 - [Install](#install)
 - [how to use?](#docs)
 
-### Coded by PSH-TEAM
+### Coded by RELAX
 
 - [telegram](https://t.me/psh_team)
 - [youtube](https://www.youtube.com/channel/UCRFNcuHk3I_1g6PBaBxj9qQ)
