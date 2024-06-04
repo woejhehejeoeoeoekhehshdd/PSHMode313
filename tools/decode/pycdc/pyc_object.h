@@ -70,10 +70,10 @@ public:
     inline int type() const;
 
     template <class _Cast>
-    PycRef<_Cast> try_cast() const { return dynamic_cast<_Cast*>(m_obj); }
+    PycRef<_Cast> cast() const { return dynamic_cast<_Cast*>(m_obj); }
 
     template <class _Cast>
-    PycRef<_Cast> cast() const
+    PycRef<_Cast> require_cast() const
     {
         _Cast* result = dynamic_cast<_Cast*>(m_obj);
         if (!result)
@@ -143,8 +143,6 @@ public:
 
 private:
     int m_refs;
-
-protected:
     int m_type;
 
 public:

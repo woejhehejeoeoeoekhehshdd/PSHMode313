@@ -164,30 +164,10 @@ void PycModule::setVersion(unsigned int magic)
         m_unicode = true;
         break;
 
-    case MAGIC_3_11:
-        m_maj = 3;
-        m_min = 11;
-        m_unicode = true;
-        break;
-
     /* Bad Magic detected */
     default:
         m_maj = -1;
         m_min = -1;
-    }
-}
-
-bool PycModule::isSupportedVersion(int major, int minor)
-{
-    switch (major) {
-    case 1:
-        return (minor >= 0 && minor <= 6);
-    case 2:
-        return (minor >= 0 && minor <= 7);
-    case 3:
-        return (minor >= 0 && minor <= 10);
-    default:
-        return false;
     }
 }
 
@@ -219,36 +199,31 @@ void PycModule::loadFromFile(const char* filename)
             in.get32(); // Size parameter added in Python 3.3
     }
 
-    m_code = LoadObject(&in, this).cast<PycCode>();
-}
-
-void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
-{
-    PycFile in (filename);
-    if (!in.isOpen()) {
-        fprintf(stderr, "Error opening file %s\n", filename);
-        return;
-    }
-    if (!isSupportedVersion(major, minor)) {
-        fprintf(stderr, "Unsupported version %d.%d\n", major, minor);
-        return;
-    }
-    m_maj = major;
-    m_min = minor;
-    m_unicode = (major >= 3);
-    m_code = LoadObject(&in, this).cast<PycCode>();
+    m_code = LoadObject(&in, this).require_cast<PycCode>();
 }
 
 PycRef<PycString> PycModule::getIntern(int ref) const
 {
-    if (ref < 0 || (size_t)ref >= m_interns.size())
+    if (ref < 0)
         throw std::out_of_range("Intern index out of range");
-    return m_interns[(size_t)ref];
+
+    auto it = m_interns.cbegin();
+    while (ref-- && it != m_interns.cend())
+        ++it;
+    if (it == m_interns.cend())
+        throw std::out_of_range("Intern index out of range");
+    return *it;
 }
 
 PycRef<PycObject> PycModule::getRef(int ref) const
 {
-    if (ref < 0 || (size_t)ref >= m_refs.size())
+    if (ref < 0)
         throw std::out_of_range("Ref index out of range");
-    return m_refs[(size_t)ref];
+
+    auto it = m_refs.cbegin();
+    while (ref-- && it != m_refs.cend())
+        ++it;
+    if (it == m_refs.cend())
+        throw std::out_of_range("Ref index out of range");
+    return *it;
 }

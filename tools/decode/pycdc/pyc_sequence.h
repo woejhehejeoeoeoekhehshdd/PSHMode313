@@ -3,6 +3,8 @@
 
 #include "pyc_object.h"
 #include <vector>
+#include <list>
+#include <set>
 
 class PycSequence : public PycObject {
 public:
@@ -15,11 +17,11 @@ protected:
     int m_size;
 };
 
-class PycSimpleSequence : public PycSequence {
+class PycTuple : public PycSequence {
 public:
-    typedef std::vector<PycRef<PycObject>> value_t;
+    typedef std::vector<PycRef<PycObject> > value_t;
 
-    PycSimpleSequence(int type) : PycSequence(type) { }
+    PycTuple(int type = TYPE_TUPLE) : PycSequence(type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
@@ -28,28 +30,31 @@ public:
     const value_t& values() const { return m_values; }
     PycRef<PycObject> get(int idx) const override { return m_values.at(idx); }
 
-protected:
+private:
     value_t m_values;
 };
 
-class PycTuple : public PycSimpleSequence {
+class PycList : public PycSequence {
 public:
-    typedef PycSimpleSequence::value_t value_t;
-    PycTuple(int type = TYPE_TUPLE) : PycSimpleSequence(type) { }
+    typedef std::list<PycRef<PycObject> > value_t;
+
+    PycList(int type = TYPE_LIST) : PycSequence(type) { }
+
+    bool isEqual(PycRef<PycObject> obj) const override;
 
     void load(class PycData* stream, class PycModule* mod) override;
-};
 
-class PycList : public PycSimpleSequence {
-public:
-    typedef PycSimpleSequence::value_t value_t;
-    PycList(int type = TYPE_LIST) : PycSimpleSequence(type) { }
+    const value_t& values() const { return m_values; }
+    PycRef<PycObject> get(int idx) const override;
+
+private:
+    value_t m_values;
 };
 
 class PycDict : public PycSequence {
 public:
-    typedef std::vector<PycRef<PycObject>> key_t;
-    typedef std::vector<PycRef<PycObject>> value_t;
+    typedef std::list<PycRef<PycObject> > key_t;
+    typedef std::list<PycRef<PycObject> > value_t;
 
     PycDict(int type = TYPE_DICT) : PycSequence(type) { }
 
@@ -68,10 +73,21 @@ private:
     value_t m_values;
 };
 
-class PycSet : public PycSimpleSequence {
+class PycSet : public PycSequence {
 public:
-    typedef PycSimpleSequence::value_t value_t;
-    PycSet(int type = TYPE_SET) : PycSimpleSequence(type) { }
+    typedef std::set<PycRef<PycObject> > value_t;
+
+    PycSet(int type = TYPE_SET) : PycSequence(type) { }
+
+    bool isEqual(PycRef<PycObject> obj) const override;
+
+    void load(class PycData* stream, class PycModule* mod) override;
+
+    const value_t& values() const { return m_values; }
+    PycRef<PycObject> get(int idx) const override;
+
+private:
+    value_t m_values;
 };
 
 #endif
